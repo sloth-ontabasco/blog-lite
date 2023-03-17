@@ -49,4 +49,4 @@ api.add_resource(CommentAPI, "/api/post/<int:post_id>/comment")
 api.add_resource(LikeAPI,"/api/post/<int:post_id>/like")
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=8081)

@@ -131,3 +131,21 @@ dmypy.json
 
 #VSCODE
 .vscode/
+Project Report.pdf
+lib64
+bin/activate
+.gitignore
+bin/activate.fish
+bin/Activate.ps1
+bin/activate.csh
+include/site/python3.10/greenlet/greenlet.h
+bin/python3.10
+bin/python3
+bin/pybabel
+bin/python
+bin/pip3.10
+bin/pip3
+bin/pip
+bin/normalizer
+bin/flask
+frontend/package-lock.json
