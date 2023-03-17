@@ -1,0 +1,111 @@
+{% extends "navbar.html" %}
+{% block content %}
+
+<!--Modal for submission-->
+<div class="modal fade" tabindex="-1" role="dialog" id="make-post1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Post</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/post" method="post" enctype="multipart/form-data" id="make-post-form">
+
+                    <div class="form-group">
+                        <div class="preview">
+                            <img id="file-ip-1-preview">
+                        </div>
+                        <label for="file-upload">Upload Cover Picture</label><br>
+                        <input type="file" id="file-upload" name="file-upload" accept="image/*"
+                            onchange="showPreview(event);" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" class="form-control" name="title" id="title" placeholder="Enter Post Title"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea class="form-control" rows="5" name="content" id="content"
+                            placeholder="Content"></textarea>
+                </form>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" form="make-post-form" class="btn btn-primary">Create Post</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+</div>
+<div class="button iconbutton" data-bs-toggle="modal" data-bs-target="#make-post1">
+    <i class="fa-solid fa-plus"></i>
+</div>
+<!--Modal for submission-->
+
+<div class="container ">
+    {% if not posts %}
+    <div class="user-noposts-alert alert alert-info alert-dismissible fade show" role="alert">
+        <strong>Your feed is empty! </strong>Follow someone or <a data-bs-toggle="modal" data-bs-target="#make-post">make a
+            post</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% else %}
+    <h2 class="row">Posts from your friends!</h2>
+    <div class="row">
+        {% for post in posts %}
+        <div class="card mt-4 w-50">
+            <img src="/static/blog_pictures/{{post.id}}.png" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">{{post.title}}</h6>
+                    <p class="card-text">{{ post.description | truncate(150,True,'...') }}</p>
+                    <a href="/posts/{{post.id}}" class="btn btn-primary">View Post</a>
+            </div>
+            <div class="card-footer">
+                <div class="card-author-info d-flex align-items-center">
+                    <img class="comment-pfp m-1" src="/static/profile_pictures/{{post.user.id}}.png"
+                        onerror="this.onerror=null; this.src='/static/profile_pictures/default.png'" />
+                    <p>&nbsp; &nbsp;<a href="/users/{{post.user.id}}">{{post.user.username}}</a> posted at {{post.created_on}}</p>
+                </div>
+                <div class="card-post-info">
+                    <i class="fa-regular fa-heart"></i>  {{post.likes | length}}   
+                    <i class="fa-regular fa-comment"></i> {{ post.comments | length }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% if post_success %}
+<div class="user-success-alert alert alert-success alert-dismissible fade show" role="alert">
+    <strong>Post Success</strong> View it <a href="/posts/{{post_id}}">here</a>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+{% if post_failure %}
+<div class="user-failure-alert alert alert-danger alert-dismissible fade show" role="alert">
+    <strong>Uh oh, Something went wrong.</strong> Please try again
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<script type="text/javascript">
+    function showPreview(event) {
+        if (event.target.files.length > 0) {
+            var src = URL.createObjectURL(event.target.files[0]);
+            var preview = document.getElementById("file-ip-1-preview");
+            preview.src = src;
+            preview.height = 150;
+            preview.width = 150;
+            preview.style.display = "block";
+        }
+    }
+</script>
+{% endblock %}

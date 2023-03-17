@@ -1,0 +1,208 @@
+{% extends "navbar.html" %}
+{% block post %}
+
+<div class="container mt-3">
+    <div class="user-info-row row align-items-center mb-2">
+        <div class="col col-1 d-flex flex-row">
+            <img class="pfp" src="/static/profile_pictures/{{post.user.id}}.png"
+                onerror="this.error = null; this.src = '/static/profile_pictures/default.png'" />
+        </div>
+        <div class="col col-1 align-self-center text-left">
+            <p class="h5"><a href="/users/{{post.user.id}}">{{post.user.username}}</a></p>
+        </div>
+        <div class="col col-7 text-center">
+            <p class="h3">{{post.title}}</p>
+        </div>
+        <!--
+        <div class="col col-3 d-flex flex-row-reverse post-buttons">
+            {% if current_user.id == post.author_id %}
+
+            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del-post1"><span
+                    class="fa fa-solid fa-trash" aria-hidden="true"></span></button>
+            <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#edit-post1"><i
+                    class="fa fa-solid fa-pen-to-square "></i>
+            </button>
+            {% endif %}
+
+
+            <form target="dummyframe" action="/api/post/{{post.id}}/like" method="post" onsubmit="location.reload();">
+
+                <input type="hidden" class="form-control" name="author_id" value="{{current_user.id}}"
+                    style="display:none;" />
+                {% if liked == True %}
+                <button type="submit" class="btn btn-outline-danger">{{num_likes}} <i class="fa-solid fa-heart"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-outline-danger">{{num_likes}} <i class="fa-regular fa-heart"></i></button>
+                {% endif %}
+
+            </form>
+        </div>
+        -->
+    </div>
+    <div class="post-info-row row text-center h-25">
+        <img class="col" src="/static/blog_pictures/{{post.id}}.png">
+    </div>
+
+    <div class="row m-2 post-buttons">
+
+        {% if post.likes | length > 0 %}
+        <a data-bs-toggle="modal" data-bs-target="#post-likes" class="col">
+            {% if post.likes | length == 1 %}
+            <div class="col">Liked by {{post.likes[0].user.username}}</div>
+            {% elif post.likes | length == 2 %}
+            <div class="col">Liked by {{post.likes[0].user.username}} and {{post.likes[1].user.username}}</div>
+            {% else %}
+            <div class="col">Liked by {{post.likes[0].user.username}}, {{post.likes[1].user.username}} and others</div>
+            {% endif %}
+        </a>
+
+        {% endif %}
+        <div class="col d-flex flex-row-reverse">
+            {% if current_user.id == post.author_id %}
+
+            <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del-post1"><span
+                    class="fa fa-solid fa-trash" aria-hidden="true"></span></button>
+            <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#edit-post1"><i
+                    class="fa fa-solid fa-pen-to-square "></i>
+            </button>
+            {% endif %}
+            
+
+            <form target="dummyframe" action="/api/post/{{post.id}}/like" method="post" onsubmit="location.reload();">
+
+                <input type="hidden" class="form-control" name="author_id" value="{{current_user.id}}"
+                    style="display:none;" />
+                {% if liked == True %}
+                <button type="submit" class="btn btn-outline-danger">{{num_likes}} <i class="fa-solid fa-heart"></i></button>
+                {% else %}
+                <button type="submit" class="btn btn-outline-danger">{{num_likes}} <i class="fa-regular fa-heart"></i></button>
+                {% endif %}
+
+            </form>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <p class="h6">Created on {{post.created_on}}</p>
+    </div>
+    <div class="row mt-3 mb-4">
+        <div class="col">
+            <p class="h5">{{post.description}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <form class="mt-5 col" target="dummyframe" action="/api/post/{{post.id}}/comment" method="post"
+            onsubmit="location.reload();">
+            <div class="form-floating">
+                <textarea class="form-control" name="content" placeholder="Leave a comment here" id="floatingTextarea2"
+                    style="height: 150px"></textarea>
+                <label for="floatingTextarea2">Leave a comment</label>
+            </div>
+            <input type="hidden" class="form-control" name="author_id" value="{{current_user.id}}" />
+            <button type="submit" class="btn btn-outline-success btn-lg mt-4">Post</button>
+        </form>
+    </div>
+</div>
+
+<div class="comment-section container mt-4">
+    <h3 class="h-4">Comments</h3>
+    {% if post.comments | length == 0%}
+    <p>This post has no comments, be the first one to post one</p>
+    {% else %}
+    {% for comment in post.comments %}
+    <div class="row d-flex align-items-center mt-1">
+        <figure>
+            <blockquote class="blockquote">
+                <p>{{comment.content}}</p>
+            </blockquote>
+            <figcaption class="blockquote-footer">
+                <img class="comment-pfp m-1" src="/static/profile_pictures/{{comment.user.id}}.png"
+                    onerror="this.onerror=null; this.src='/static/profile_pictures/default.png'" />
+                <a href="/user/{{comment.user.id}}">{{comment.user.username}}</a> commented at
+                <cite>{{comment.created_on}}</cite>
+            </figcaption>
+        </figure>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+
+<!--Modal for edit-->
+<div class="modal fade" tabindex="-1" role="dialog" id="edit-post1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Post</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="/edit" method="post" enctype="multipart/form-data" id="edit-post-form">
+
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" class="form-control" name="title" id="title" value="{{post.title}}" required>
+                    </div>
+                    <input type="hidden" class="form-control" name="post-id" id="post-id" value="{{post.id}}" />
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea class="form-control" rows="5" name="content"
+                            id="content">{{post.description}}</textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="edit-post-form" class="btn btn-primary">Edit Post</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Modal for edit-->
+
+<!--Delete confirmation modal-->
+<div class="modal fade" role="dialog" id="del-post1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure?</h5>
+            </div>
+            <div class="modal-body">
+                <p class="p-5">This action cannot be undone</p>
+                <form action="/delete" method="post" enctype="multipart/form-data" id="del-post-form">
+                    <input type="hidden" class="form-control" name="post-id" id="post-id" value="{{post.id}}" />
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="del-post-form" class="btn btn-danger">Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Delete confimation modal-->
+
+<div class="modal fade" tabindex="-1" role="dialog" id="post-likes">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">All Likes</h5>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                {% for like in post.likes %}
+                    <li class="list-group-item">
+                        <img class="pfp" src="/static/profile_pictures/{{like.user.id}}.png" onerror="this.onerror=null; this.src='/static/profile_pictures/default.png'"/>
+                        <a href="/users/{{like.user.id}}">{{like.user.username}}</a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
