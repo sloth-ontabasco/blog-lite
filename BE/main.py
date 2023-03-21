@@ -1,6 +1,9 @@
-from flask import Flask
+from functools import wraps
+from flask_cors import CORS
+from flask import Flask, request, jsonify
 from flask_restful import Api
 from flask_login import LoginManager
+from flask_bcrypt import Bcrypt
 from application.models import User
 from application.database import db
 from application.config import LocalDevelopmentConfig
@@ -14,8 +17,10 @@ import logging
 logger = logging.basicConfig()
 app, api = None, None
 
+
 def create_app(): 
     app = Flask(__name__, template_folder='templates',static_folder='templates/static')
+    CORS(app)
     app.config.from_object(LocalDevelopmentConfig)
 
     app.register_blueprint(main_bp)
@@ -38,7 +43,7 @@ def create_app():
     return app, api
 
 app, api = create_app() 
-
+bcrypt = Bcrypt(app)
 api.add_resource(UserAPI, "/api/user","/api/user/<string:username>")
 api.add_resource(SearchAPI,"/api/users/<string:search_str>")
 api.add_resource(FollowAPI, "/api/user/follow/<string:follower>")

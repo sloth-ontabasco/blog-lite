@@ -2,6 +2,7 @@ from .database import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
 from flask_restful import fields
+from flask_bcrypt import generate_password_hash, check_password_hash
 
 
 followers = db.Table(
@@ -25,7 +26,7 @@ class User(UserMixin, db.Model):
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    password = db.Column(db.String)
     name = db.Column(db.String(100))
     followed = db.relationship(
         "User",
@@ -38,6 +39,27 @@ class User(UserMixin, db.Model):
     posts = db.relationship("Post", backref="user",lazy='dynamic')
     comments = db.relationship("Comment",backref="user",lazy='dynamic') 
     likes = db.relationship("Like",backref="user",lazy='dynamic')
+
+    def __init__(self, username=username, password=password, name=name):
+
+        self.username = username
+        self.password = generate_password_hash(password)
+        self.name = name
+
+    @classmethod
+    def authenticate(cls, **kwargs):
+        username = kwargs.get('username')
+        password = kwargs.get('password')
+        print(f"authenticating with {username} and {password}") 
+        if not username or not password:
+            return None
+
+        user = cls.query.filter_by(username=username).first()
+        if not check_password_hash(user.password, password):
+            print("failed pass hash")
+            return None
+
+        return user
 
 
     # define methods for reusability

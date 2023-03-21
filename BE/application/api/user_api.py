@@ -1,6 +1,7 @@
 from flask_restful import fields, marshal_with, Resource, reqparse
 from flask import request
 from flask_login import current_user
+import jwt
 from ..models import User
 from .validation import NotFoundError, BusinessValidationError
 from ..database import db
@@ -9,7 +10,6 @@ user_fields = {
     "id": fields.Integer,
     "username": fields.String,
     "name": fields.String,
-    "password": fields.String,
     "created_on": fields.DateTime
 }
 
@@ -60,6 +60,7 @@ class UserAPI(Resource):
 
     @marshal_with(user_fields)
     def post(self):
+        print("reached here")
         args = create_user_parser.parse_args()
         username, name, password = (
             args.get("username", None),
@@ -91,7 +92,6 @@ class UserAPI(Resource):
             raise BusinessValidationError(
                 400, error_code="U4", error_message="User already exists"
             )
-
         new_user = User(username=username, name=name, password=password)
         db.session.add(new_user)
         db.session.commit()
