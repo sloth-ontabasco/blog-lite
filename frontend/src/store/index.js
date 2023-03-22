@@ -10,7 +10,7 @@ export default createStore({
   },
   getters: {
     isAuthenticated(state) {
-      return isValidJwt(state.jwt.token);
+      return isValidJwt(state.jwt);
     },
   },
   mutations: {
@@ -24,6 +24,10 @@ export default createStore({
       localStorage.token = payload.jwt;
       state.jwt = payload.jwt;
     },
+    removeJwtToken(state) {
+      localStorage.removeItem('token');
+      state.jwt = "";
+    }
   },
   actions: {
     login(context, userData) {

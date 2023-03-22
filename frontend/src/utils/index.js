@@ -3,6 +3,7 @@ const emitter = mitt();
 
 export default emitter;
 export function isValidJwt(jwt) {
+  console.log(jwt)
   if (!jwt || jwt.split(".").length < 3) {
     return false;
   }

@@ -10,32 +10,30 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="/post" method="post" enctype="multipart/form-data" id="make-post-form">
-
+                <form id="make-post-form">
                     <div class="form-group">
                         <div class="preview">
                             <img id="file-ip-1-preview">
                         </div>
                         <label for="file-upload">Upload Cover Picture</label><br>
-                        <input type="file" id="file-upload" name="file-upload" accept="image/*"
-                            onchange="showPreview(event);" required>
+                        <input type="file" id="file-upload" name="file-upload" accept="image/*" required>
                     </div>
                     <div class="form-group">
                         <label for="title">Title</label>
-                        <input type="text" class="form-control" name="title" id="title" placeholder="Enter Post Title"
+                        <input type="text" class="form-control" v-model="title" name="title" id="title" placeholder="Enter Post Title"
                             required>
                     </div>
 
                     <div class="form-group">
                         <label for="content">Content</label>
-                        <textarea class="form-control" rows="5" name="content" id="content"
+                        <textarea class="form-control" rows="5" v-model="content" name="content" id="content"
                             placeholder="Content"></textarea>
                     </div>
                 </form>
             </div>
         </div>
         <div class="modal-footer">
-            <button type="submit" form="make-post-form" class="btn btn-primary">Create Post</button>
+            <button @click="createPost" type="button" class="btn btn-primary">Create Post</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
     </div>
@@ -46,8 +44,33 @@
 <!--Modal for submission-->
 </template>
 <script>
+import addPost from '@/api/index.js'
 export default {
-    name: "AddPostModal"
+    name: "AddPostModal",
+    data() {
+        return {
+            content: "",
+            title: "",
+            file: null
+        }
+    },
+    methods: {
+        createPost() {
+            
+            console.log("createPost called")
+            let form = new FormData(document.getElementById('make-post-form'))
+            const postData = new URLSearchParams();
+            console.log("postData: ", typeof(postData))
+            for(const p of form)
+                postData.append(
+                    p[0], p[1]
+                )
+            addPost(postData)
+            .then((data) => {
+                console.log(data);
+            })
+        }
+    }
 }
 </script>
 <style scoped>
