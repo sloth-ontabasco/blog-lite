@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_required, current_user
+from flask_login import current_user
 from ..database import db
 from ..models import User, Post, Like
 import requests
@@ -7,8 +7,7 @@ import requests
 post = Blueprint("post", __name__)
 
 @post.route("/post",methods=["POST"])
-@login_required
-def make_post():
+def make_post(current_user):
     author_id = current_user.id
     title = request.form.get("title")
     description = request.form.get("content")
@@ -26,7 +25,6 @@ def make_post():
         flash("Uh oh your post could not be made, try again")
 
 @post.route("/posts/<int:post_id>",methods=["GET"])
-@login_required
 def view_post(post_id):
     res = requests.get(request.host_url + f"api/post/{post_id}")
     if res.status_code != 200:
@@ -39,7 +37,6 @@ def view_post(post_id):
     return render_template("post.html", post=post, liked=liked, num_likes=num_likes)
     
 @post.route("/edit",methods=["POST"])
-@login_required
 def edit_post():
     author_id = current_user.id 
     title = request.form.get("title",None)
@@ -60,7 +57,6 @@ def edit_post():
 
 
 @post.route("/delete",methods=["POST"])
-@login_required
 def del_post():
     post_id = request.form.get("post-id",None)
     res = requests.delete(request.host_url + f"api/post/{post_id}")

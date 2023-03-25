@@ -12,11 +12,11 @@ from application.routes.auth_routes import auth as auth_bp
 from application.routes.post_routes import post as post_bp
 from application.api.post_api import *
 from application.api.user_api import *
+from flask_jwt_extended import JWTManager
 import logging
 
 logger = logging.basicConfig()
 app, api = None, None
-
 
 def create_app(): 
     app = Flask(__name__, template_folder='templates',static_folder='templates/static')
@@ -27,6 +27,14 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(post_bp)
     db.init_app(app)
+
+    jwt = JWTManager(app) 
+    @jwt.user_lookup_loader
+    def user_lookup_callback(_jwt_header, jwt_data):
+        identity = jwt_data["sub"]
+        user = User.query.filter_by(username=identity).one_or_none()
+        return user 
+
 
     login_manager = LoginManager()
     login_manager.login_view = 'auth.login'
@@ -44,6 +52,7 @@ def create_app():
 
 app, api = create_app() 
 bcrypt = Bcrypt(app)
+
 api.add_resource(UserAPI, "/api/user","/api/user/<string:username>")
 api.add_resource(SearchAPI,"/api/users/<string:search_str>")
 api.add_resource(FollowAPI, "/api/user/follow/<string:follower>")

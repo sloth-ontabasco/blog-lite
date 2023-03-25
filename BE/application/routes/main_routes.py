@@ -1,7 +1,8 @@
-from flask import Blueprint, redirect, url_for, render_template, request, flash
+from flask import Blueprint, redirect, url_for, render_template, request, flash, jsonify, make_response
 from flask_login import login_required, current_user
 from ..models import Post, followers, User
 from ..api.validation import NotFoundError
+from flask_jwt_extended import jwt_required, current_user
 import requests
 
 main = Blueprint("main", __name__)
@@ -13,9 +14,9 @@ def index():
 
 
 @main.route("/home")
-@login_required
+@jwt_required()
 def home():
-
+    print("got called at /home")
     followed_posts = Post.query.join(
         followers, (followers.c.followed_id == Post.author_id)
     ).filter(followers.c.follower_id == current_user.id)
@@ -26,19 +27,21 @@ def home():
         if own_posts.all():
             appearing_posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.created_on.desc()).limit(15)
         else:
-            return render_template("home.html", posts=None)
+            return make_response(jsonify({"posts":None}),200) 
     else:
         if own_posts.first():
             appearing_posts = followed_posts.union(own_posts).order_by(Post.created_on.desc()).limit(15)
         else:
             appearing_posts = followed_posts.order_by(Post.created_on.desc()).limit(15)
+
+    print(appearing_posts)
     
     return render_template("home.html",posts=appearing_posts.all())
 
  
 @main.route("/users/<int:user_id>", methods=["GET"])
-@login_required
-def profile(user_id):
+@jwt_required()
+def profile(user_id,current_user):
     user = User.query.filter(User.id == user_id).first()
     if not user:
         raise NotFoundError(404)

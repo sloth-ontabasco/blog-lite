@@ -61,6 +61,14 @@ class User(UserMixin, db.Model):
 
         return user
 
+    @classmethod
+    def identity(id):
+        user = User.query(id=id).first()
+        if user:
+            return user
+        else:
+            return None
+
 
     # define methods for reusability
     def follow(self, user):

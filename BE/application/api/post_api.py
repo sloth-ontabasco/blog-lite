@@ -1,8 +1,9 @@
 from flask_restful import fields, marshal_with, Resource, reqparse
 from flask import request
 from ..models import User, Post, Comment, Like
-from .validation import NotFoundError, BusinessValidationError
+from .validation import BusinessValidationError
 from ..database import db
+from flask_jwt_extended import jwt_required, current_user
 
 post_fields = {
     "id": fields.Integer,
@@ -25,10 +26,6 @@ like_fields = {
     "author_id": fields.Integer
 }
 
-post_parser = reqparse.RequestParser()
-post_parser.add_argument("author_id",location='form')
-post_parser.add_argument("title",location='form')
-post_parser.add_argument("description",location='form')
 
 create_comment_parser = reqparse.RequestParser()
 create_comment_parser.add_argument("content",location='form')
@@ -46,14 +43,12 @@ class PostAPI(Resource):
             raise BusinessValidationError(status_code=404, error_code="P1",error_message="Post does not exist")
         return post
 
-    @marshal_with(post_fields)
+
+    @jwt_required()
     def post(self):
-        args = post_parser.parse_args()
-        author_id, title, description = (
-            args.get("author_id", None), 
-            args.get("title", None), 
-            args.get("description", None), 
-        )
+        author_id = current_user.id
+        title, description = self.json['title'], self.json['description']
+        print(title,description)
         if not author_id:
             raise BusinessValidationError(
                 status_code=400,
@@ -88,10 +83,7 @@ class PostAPI(Resource):
 
     @marshal_with(post_fields)
     def put(self, post_id):
-        args = post_parser.parse_args()
-        author_id = args.get("author_id",None)
-        description = args.get("description",None)
-        title = args.get("title",None)
+        post,title, description, author_id = None
 
         post = Post.query.filter(Post.id == post_id).first()
         user = User.query.filter(User.id == author_id).first()
