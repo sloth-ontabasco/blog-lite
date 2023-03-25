@@ -6,7 +6,8 @@ import { isValidJwt, emitter} from "@/utils/index.js";
 export default createStore({
   state: {
     userData: {},
-    jwt: "",
+    token: "",
+    ref_token: ""
   },
   getters: {
     isAuthenticated(state) {
@@ -21,12 +22,18 @@ export default createStore({
 
     setJwtToken(state, payload) {
       console.log("setJwtToken payload = ", payload);
-      localStorage.token = payload.jwt;
-      state.jwt = payload.jwt;
+      localStorage.setItem("token",  payload.token)
+      state.token = payload.token;
+      console.log(state.token)
     },
     removeJwtToken(state) {
       localStorage.removeItem('token');
-      state.jwt = "";
+      state.token = "";
+    },
+    setRefToken(state, payload) {
+      console.log("setRefToken payload = ", payload)
+      localStorage.setItem("ref_token",  payload.ref_token)
+      state.ref_token = payload.ref_token
     }
   },
   actions: {
@@ -34,7 +41,8 @@ export default createStore({
       context.commit("setUserData", { userData });
       return authenticate(userData)
         .then((data) => {
-          context.commit("setJwtToken", { jwt: data.token })
+          context.commit("setJwtToken", { token: data.token })
+          context.commit("setRefToken", { ref_token: data.ref_token })
         })
     },
   },

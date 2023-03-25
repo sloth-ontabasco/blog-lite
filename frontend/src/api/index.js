@@ -26,16 +26,17 @@ async function addPost(postData, token) {
   let res = await fetch(`${API_URL}/api/post`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer: ${token}`,
+      "Authorization": `Bearer: ${token}`,
+      "Content-Type": "application/json"
     },
-    body: postData,
+    body: JSON.stringify(postData),
   });
   console.log(res.status);
   return res.json();
 }
 async function getHomePage(token) {
   console.log("inside api call");
-  let res = await fetch(`${API_URL}/home`, {
+  let res = await fetch(`${API_URL}/api/home`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

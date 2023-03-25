@@ -26,7 +26,7 @@
 
                     <div class="form-group">
                         <label for="content">Content</label>
-                        <textarea class="form-control" rows="5" v-model="content" name="content" id="content"
+                        <textarea class="form-control" rows="5" v-model="description" name="content" id="content"
                             placeholder="Content"></textarea>
                     </div>
                 </form>
@@ -49,27 +49,22 @@ export default {
     name: "AddPostModal",
     data() {
         return {
-            content: "",
+            description: "",
             title: "",
             file: null
         }
     },
     methods: {
         createPost() {
-            
-            console.log("createPost called")
-            let form = new FormData(document.getElementById('make-post-form'))
-            const postData = new URLSearchParams();
-            console.log("postData: ", typeof(postData))
-            for(const p of form)
-                postData.append(
-                    p[0], p[1]
-                )
-            addPost(postData)
-            .then((data) => {
-                console.log(data);
+            const token = this.$store.state.token;
+            addPost(token, {
+                "title": this.title,
+                "description": this.description
             })
-        }
+            .then((data) => console.log(data))
+            .catch((e) => console.log(e))
+        } 
+
     }
 }
 </script>

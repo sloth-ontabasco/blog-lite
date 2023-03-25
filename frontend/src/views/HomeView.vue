@@ -17,7 +17,7 @@
     <div v-else="userHasPosts">
       <h2 class="row">Posts from your friends!</h2>
       <div class="row">
-        <PostCard v-for="post in this.posts" post="post" />
+        <PostCard v-for="(post,key) in this.posts" :key="key" :post="post" />
       </div>
     </div>
   </div>
@@ -73,18 +73,16 @@ export default {
     }
   },
   async mounted() {
-    if(!this.isAuthenticated) {
       if(!localStorage.token){
+        console.log("cant find token in localstorage")
         this.$store.commit('removeJwtToken');
         return this.$router.push("/login")
       }
-      else
-        this.$store.commit("setJwtToken", { jwt: localStorage.token })
-    }
-    const token = this.$store.state.jwt
-    console.log("token@@" + token)
-    const data = await getHomePage(token)
-    this.posts = data.posts;
+      const token = localStorage.getItem("token")
+      console.log("token@@" + token)
+      const data = await getHomePage(token)
+      console.log(data)
+      this.posts = data;
   },
   components: {
     AddPostModal,
