@@ -25,18 +25,19 @@ def home():
     if not followed_posts.all():
         print("no following posts")
         if own_posts.all():
-            appearing_posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.created_on.desc()).limit(15)
+            print("POSTS TO DISPLAY FOR " + current_user.username)
+            appearing_posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.created_on.desc()).limit(15).all()
         else:
+            print("NO POST TO DISPLAY FOR " + current_user.username)
             return make_response(jsonify({"posts":None}),200) 
     else:
         if own_posts.first():
-            appearing_posts = followed_posts.union(own_posts).order_by(Post.created_on.desc()).limit(15)
+            appearing_posts = followed_posts.union(own_posts).order_by(Post.created_on.desc()).limit(15).all()
         else:
-            appearing_posts = followed_posts.order_by(Post.created_on.desc()).limit(15)
+            appearing_posts = followed_posts.order_by(Post.created_on.desc()).limit(15).all()
 
-    print(appearing_posts)
     
-    return render_template("home.html",posts=appearing_posts.all())
+    return jsonify(appearing_posts),200
 
  
 @main.route("/users/<int:user_id>", methods=["GET"])

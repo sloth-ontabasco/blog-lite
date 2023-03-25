@@ -1,53 +1,25 @@
 from flask_restful import fields, marshal_with, Resource, reqparse
 from flask import request
-from ..models import User, Post, Comment, Like
+from ..models import User, Post, Comment, Like, followers
 from .validation import BusinessValidationError
 from ..database import db
 from flask_jwt_extended import jwt_required, current_user
+from .utils import post_fields, comment_fields, like_fields, create_comment_parser, like_parser 
 
-post_fields = {
-    "id": fields.Integer,
-    "author_id": fields.Integer,
-    "title": fields.String,
-    "description": fields.String,
-}
-
-comment_fields = {
-    "id":fields.Integer,
-    "author_id": fields.Integer,
-    "post_id": fields.Integer,
-    "created_at": fields.DateTime,
-    "content": fields.String
-}
-
-like_fields = {
-    "id": fields.Integer,
-    "post_id": fields.Integer,
-    "author_id": fields.Integer
-}
-
-
-create_comment_parser = reqparse.RequestParser()
-create_comment_parser.add_argument("content",location='form')
-create_comment_parser.add_argument("author_id",location='form')
-
-like_parser = reqparse.RequestParser()
-like_parser.add_argument("author_id",location='form')
 
 class PostAPI(Resource):
 
-    @marshal_with(post_fields)
     def get(self,post_id):
         post = Post.query.filter(Post.id == post_id).first()
         if not post:
             raise BusinessValidationError(status_code=404, error_code="P1",error_message="Post does not exist")
-        return post
+        return post.to_dict()
 
 
     @jwt_required()
     def post(self):
         author_id = current_user.id
-        title, description = self.json['title'], self.json['description']
+        title, description = request.json['title'], request.json['description']
         print(title,description)
         if not author_id:
             raise BusinessValidationError(
@@ -79,9 +51,8 @@ class PostAPI(Resource):
         new_post = Post(author_id=author_id, title=title, description=description)
         db.session.add(new_post)
         db.session.commit()
-        return new_post
+        return new_post.to_dict()
 
-    @marshal_with(post_fields)
     def put(self, post_id):
         post,title, description, author_id = None
 
@@ -139,6 +110,32 @@ class PostAPI(Resource):
         db.session.delete(post)
         db.session.commit()
         return post
+
+class HomeAPI(Resource):
+
+    @jwt_required()
+    def get(self):
+        followed_posts = Post.query.join(
+            followers, (followers.c.followed_id == Post.author_id)
+        ).filter(followers.c.follower_id == current_user.id)
+        own_posts = Post.query.filter_by(author_id=current_user.id)
+
+        if not followed_posts.all():
+            print("no following posts")
+            if own_posts.all():
+                print("POSTS TO DISPLAY FOR " + current_user.username)
+                appearing_posts = Post.query.filter_by(author_id=current_user.id).order_by(Post.created_on.desc()).limit(15).all()
+            else:
+                print("NO POST TO DISPLAY FOR " + current_user.username)
+                return None
+        else:
+            if own_posts.first():
+                appearing_posts = followed_posts.union(own_posts).order_by(Post.created_on.desc()).limit(15).all()
+            else:
+                appearing_posts = followed_posts.order_by(Post.created_on.desc()).limit(15).all()
+
+        
+        return [appearing_post.to_dict() for appearing_post in appearing_posts]
 
 class CommentAPI(Resource):
 

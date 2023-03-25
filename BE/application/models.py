@@ -1,26 +1,16 @@
+from dataclasses import dataclass
 from .database import db
 from sqlalchemy.sql import func
 from flask_login import UserMixin
 from flask_restful import fields
 from flask_bcrypt import generate_password_hash, check_password_hash
-
+from typing import Mapping
 
 followers = db.Table(
     "followers",
     db.Column("follower_id", db.Integer, db.ForeignKey("user.id")),
     db.Column("followed_id", db.Integer, db.ForeignKey("user.id")),
 )
-
-class Post(db.Model):
-    __tablename__ = "post"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    author_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    title = db.Column(db.String(100))
-    description = db.Column(db.Text)
-    created_on = db.Column(db.DateTime, server_default=func.now())
-    comments = db.relationship("Comment", backref="post")
-    likes = db.relationship("Like", backref="post")
-
 
 class User(UserMixin, db.Model):
     __tablename__ = "user"
@@ -41,7 +31,6 @@ class User(UserMixin, db.Model):
     likes = db.relationship("Like",backref="user",lazy='dynamic')
 
     def __init__(self, username=username, password=password, name=name):
-
         self.username = username
         self.password = generate_password_hash(password)
         self.name = name
@@ -61,14 +50,6 @@ class User(UserMixin, db.Model):
 
         return user
 
-    @classmethod
-    def identity(id):
-        user = User.query(id=id).first()
-        if user:
-            return user
-        else:
-            return None
-
 
     # define methods for reusability
     def follow(self, user):
@@ -82,7 +63,33 @@ class User(UserMixin, db.Model):
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "name": self.name,
+            "followed": [followed.to_dict() for followed in self.followed]
+        }
 
+
+class Post(db.Model):
+    __tablename__ = "post"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    author_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    title = db.Column(db.String(100))
+    description = db.Column(db.Text)
+    created_on = db.Column(db.DateTime, server_default=func.now())
+    comments = db.relationship("Comment", backref="post")
+    likes = db.relationship("Like", backref="post")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "author": self.user.to_dict(),
+            "title": self.title,
+            "description": self.description,
+            "created_on": self.created_on.strftime(format="%H:%M %d/%m/%Y")
+        }
 
 class Comment(db.Model):
     __tablename__ = "comment"

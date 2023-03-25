@@ -1,31 +1,11 @@
 from flask_restful import fields, marshal_with, Resource, reqparse
 from flask import request
-from flask_login import current_user
-import jwt
+from flask_jwt_extended import jwt_required, current_user
 from ..models import User
 from .validation import NotFoundError, BusinessValidationError
 from ..database import db
+from .utils import user_fields, create_user_parser, update_user_parser, create_follow_parser
 
-user_fields = {
-    "id": fields.Integer,
-    "username": fields.String,
-    "name": fields.String,
-    "created_on": fields.DateTime
-}
-
-create_user_parser = reqparse.RequestParser()
-create_user_parser.add_argument("username", location="form")
-create_user_parser.add_argument("name", location="form")
-create_user_parser.add_argument("password", location="form")
-
-update_user_parser = reqparse.RequestParser()
-update_user_parser.add_argument("username", location="form")
-update_user_parser.add_argument("password", location="form")
-update_user_parser.add_argument("name", location="form")
-update_user_parser.add_argument("author_id", location="form")
-
-create_follow_parser = reqparse.RequestParser()
-create_follow_parser.add_argument("username",location="form")
 
 class SearchAPI(Resource):
     """Search API"""
@@ -47,6 +27,7 @@ class SearchAPI(Resource):
             res.append(data)
 
         return res
+
 
 
 class UserAPI(Resource):

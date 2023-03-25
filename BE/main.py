@@ -58,6 +58,7 @@ api.add_resource(SearchAPI,"/api/users/<string:search_str>")
 api.add_resource(FollowAPI, "/api/user/follow/<string:follower>")
 api.add_resource(UnollowAPI, "/api/user/unfollow/<string:follower>")
 
+api.add_resource(HomeAPI,"/api/home")
 api.add_resource(PostAPI,"/api/post", "/api/post/<int:post_id>")
 api.add_resource(CommentAPI, "/api/post/<int:post_id>/comment")
 api.add_resource(LikeAPI,"/api/post/<int:post_id>/like")
