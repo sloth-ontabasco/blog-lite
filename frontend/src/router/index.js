@@ -32,8 +32,8 @@ const routes = [
   }
 ]
 
-const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+const router = createrouter({
+  history: createwebhistory(process.env.base_url),
   routes
 })
 

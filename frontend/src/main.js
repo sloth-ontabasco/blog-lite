@@ -1,10 +1,10 @@
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createapp } from 'vue'
+import app from './app.vue'
 import router from './router'
 import store from './store'
 import {emitter } from './utils/index.js'
 
-const app = createApp(App).use(store).use(router)
+const app = createapp(app).use(store).use(router)
 
-app.config.globalProperties.$mitt = emitter;
+app.config.globalproperties.$mitt = emitter;
 app.mount('#app')
