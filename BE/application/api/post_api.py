@@ -1,5 +1,6 @@
 from flask_restful import fields, marshal_with, Resource, reqparse
-from flask import request
+from flask_restful import request
+from flask import jsonify
 from ..models import User, Post, Comment, Like, followers
 from .validation import BusinessValidationError
 from ..database import db
@@ -9,11 +10,12 @@ from .utils import post_fields, comment_fields, like_fields, create_comment_pars
 
 class PostAPI(Resource):
 
-    def get(self,post_id):
+    def get(self, post_id):
         post = Post.query.filter(Post.id == post_id).first()
         if not post:
             raise BusinessValidationError(status_code=404, error_code="P1",error_message="Post does not exist")
-        return post.to_dict()
+        print(post.to_dict())
+        return jsonify(post.to_dict())
 
 
     @jwt_required()
@@ -138,6 +140,9 @@ class HomeAPI(Resource):
         return [appearing_post.to_dict() for appearing_post in appearing_posts]
 
 class CommentAPI(Resource):
+    """
+    Route: /api/post/:post_id/comment
+    """
 
     @marshal_with(comment_fields)
     def post(self,post_id):
@@ -160,7 +165,26 @@ class CommentAPI(Resource):
         db.session.commit()
         return new_comment
 
+    def get(self, post_id):
+        post = Post.query.filter(Post.id == post_id).first()
+        if not post:
+            raise BusinessValidationError(status_code=400,error_code="C1",error_message="Invalid Post ID")
+
+        if not post.comments:
+            return []
+        
+        comments = []
+        for comment in post.comments:
+            comments.append(comment.to_dict())
+
+        return comments
+
+        
+
 class LikeAPI(Resource):
+    """
+    Route: /api/post/:post_id/like
+    """
 
     @marshal_with(like_fields)
     def post(self, post_id):
@@ -184,8 +208,16 @@ class LikeAPI(Resource):
 
         return like
 
+    def get(self,post_id):
+        post = Post.query.filter(Post.id == post_id).first()
+        if not post:
+            raise BusinessValidationError(status_code=400,error_code="L2",error_message="Invalid Post ID")
 
-
-
-
+        if not post.likes: 
+            return []
         
+        liked_users = []
+        for like in post.likes:
+            liked_users.append(like.user.to_dict())
+
+        return liked_users

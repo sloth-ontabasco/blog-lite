@@ -72,7 +72,7 @@ export default {
       return this.$store.getters.isAuthenticated
     }
   },
-  async mounted() {
+  async created() {
       if(!localStorage.token){
         console.log("cant find token in localstorage")
         this.$store.commit('removeJwtToken');

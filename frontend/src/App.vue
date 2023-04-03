@@ -11,7 +11,8 @@
 export default {
   mounted() {
     if(localStorage.token) {
-      this.$store.state.jwt = localStorage.token;
+      this.$store.state.token = localStorage.token;
+      this.$store.state.ref_token = localStorage.ref_token;
     }
   }
 }

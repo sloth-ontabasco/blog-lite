@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
+import PostView from '@/views/PostView.vue'
 
 
 const routes = [
@@ -21,6 +22,16 @@ const routes = [
     component: RegisterView
   },
   {
+    path: '/posts/:id',
+    name: 'post',
+    component: PostView
+  },
+  {
+    path: '/user/:id',
+    name: 'user',
+    component: null
+  },
+  {
     path: '/about',
     name: 'about',
     // route level code-splitting
@@ -32,8 +43,8 @@ const routes = [
   }
 ]
 
-const router = createrouter({
-  history: createwebhistory(process.env.base_url),
+const router = createRouter({
+  history: createWebHistory(process.env.base_url),
   routes
 })
 

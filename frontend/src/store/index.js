@@ -11,7 +11,7 @@ export default createStore({
   },
   getters: {
     isAuthenticated(state) {
-      return isValidJwt(state.jwt);
+      return isValidJwt(state.token);
     },
   },
   mutations: {

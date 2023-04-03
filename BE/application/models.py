@@ -88,7 +88,9 @@ class Post(db.Model):
             "author": self.user.to_dict(),
             "title": self.title,
             "description": self.description,
-            "created_on": self.created_on.strftime(format="%H:%M %d/%m/%Y")
+            "created_on": self.created_on.timestamp(),
+            "likes": len(self.likes),
+            "comments": len(self.comments)
         }
 
 class Comment(db.Model):
@@ -98,6 +100,15 @@ class Comment(db.Model):
     created_on = db.Column(db.DateTime, server_default=func.now())
     author = db.Column(db.Integer, db.ForeignKey("user.id"))
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "post_id": self.post_id,
+            "author": self.user.to_dict(),
+            "content": self.content,
+            "created_on": self.created_on.timestamp(),
+        }
 
 
 class Like(db.Model):
