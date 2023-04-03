@@ -26,9 +26,6 @@ export default  {
     props: {
         post: Object
     },
-    computed: {
-        
-    }
 }
 </script>
 <style></style>
