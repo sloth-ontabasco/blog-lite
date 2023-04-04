@@ -1,11 +1,11 @@
-from flask_restful import fields, marshal_with, Resource, reqparse
-from flask_restful import request
+from flask_restful import  marshal_with, Resource
+import os
 from flask import jsonify
 from ..models import User, Post, Comment, Like, followers
 from .validation import BusinessValidationError
 from ..database import db
 from flask_jwt_extended import jwt_required, current_user
-from .utils import post_fields, comment_fields, like_fields, create_comment_parser, like_parser 
+from .utils import post_fields, comment_fields, like_fields, create_comment_parser, like_parser, create_post_parser 
 
 
 class PostAPI(Resource):
@@ -14,15 +14,20 @@ class PostAPI(Resource):
         post = Post.query.filter(Post.id == post_id).first()
         if not post:
             raise BusinessValidationError(status_code=404, error_code="P1",error_message="Post does not exist")
-        print(post.to_dict())
+
+        res = post.to_dict()
         return jsonify(post.to_dict())
 
 
     @jwt_required()
     def post(self):
         author_id = current_user.id
-        title, description = request.json['title'], request.json['description']
-        print(title,description)
+
+        args = create_post_parser.parse_args()
+        img = args.get("image",None)
+        description = args.get("description",None)
+        title = args.get("title",None)
+
         if not author_id:
             raise BusinessValidationError(
                 status_code=400,
@@ -53,6 +58,8 @@ class PostAPI(Resource):
         new_post = Post(author_id=author_id, title=title, description=description)
         db.session.add(new_post)
         db.session.commit()
+
+        img.save(f"templates/static/blog_pictures/{new_post.id}.png")
         return new_post.to_dict()
 
     def put(self, post_id):

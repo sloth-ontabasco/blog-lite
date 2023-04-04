@@ -21,19 +21,24 @@ async function register(userData) {
     });
     return res.json();
 }
-async function addPost(postData, token) {
+
+async function addPost(token, form) {
     console.log("inside add post");
     let res = await fetch(`${API_URL}/api/post`, {
-        method: "POST",
         headers: {
-            Authorization: `Bearer: ${token}`,
-            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            // "Content-Type": "multipart/form-data",
         },
-        body: JSON.stringify(postData),
+        method: "POST",
+        body: form,
     });
-    console.log(res.status);
+    if(res.status != 200) {
+        let msg = await res.json()
+        throw new Error(msg.error_message)
+    }
     return res.json();
 }
+
 async function getHomePage(token) {
     console.log("inside api call");
     let res = await fetch(`${API_URL}/api/home`, {
@@ -72,9 +77,16 @@ async function getPostComments(id) {
     return res.json()
 }
 
+async function getImageURL(url) {
+    const res = await fetch(`${API_URL}/static/${url}`)
+    if(res.status == 404) throw new Error("Image does not exist")
+    const blob = await res.blob()
+    return URL.createObjectURL(blob)
+}
+
 export {
     getHomePage, addPost,
     authenticate, register,
     getPost, getLikedUsers,
-    getPostComments
+    getPostComments, getImageURL
 };

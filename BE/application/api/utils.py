@@ -1,4 +1,5 @@
 from flask_restful import fields, reqparse
+import werkzeug
 
 user_fields = {
     "id": fields.Integer,
@@ -40,6 +41,11 @@ update_user_parser.add_argument("username", location="form")
 update_user_parser.add_argument("password", location="form")
 update_user_parser.add_argument("name", location="form")
 update_user_parser.add_argument("author_id", location="form")
+
+create_post_parser = reqparse.RequestParser()
+create_post_parser.add_argument("title",location="form")
+create_post_parser.add_argument("description",location="form")
+create_post_parser.add_argument("image",type=werkzeug.datastructures.FileStorage,location="files")
 
 create_follow_parser = reqparse.RequestParser()
 create_follow_parser.add_argument("username",location="form")
