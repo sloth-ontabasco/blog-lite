@@ -35,6 +35,9 @@ class User(UserMixin, db.Model):
         self.password = generate_password_hash(password)
         self.name = name
 
+    def __repr__(self):
+        return f"{self.id}"
+
     @classmethod
     def authenticate(cls, **kwargs):
         username = kwargs.get('username')
@@ -63,12 +66,36 @@ class User(UserMixin, db.Model):
     def is_following(self, user):
         return self.followed.filter(followers.c.followed_id == user.id).count() > 0
 
+    def get_followers(self):
+        followers = self.followers.all()
+        res = []
+        for f in followers:
+            res.append({
+                "id":f.id,
+                "name":f.name,
+                "username":f.username
+            })            
+        return res
+
+    def get_followed(self):
+        followed = self.followed.all()
+        res = []
+        for f in followed:
+            res.append({
+                "id":f.id,
+                "name":f.name,
+                "username":f.username
+            })            
+        return res
+
     def to_dict(self):
         return {
             "id": self.id,
             "username": self.username,
             "name": self.name,
-            "followed": [followed.to_dict() for followed in self.followed]
+            "followed": [followed.id for followed in self.followed if followed.id != self.id],
+            "followers": [follower.id for follower in self.followers if follower.id != self.id],
+            "posts": [post.id for post in self.posts],
         }
 
 
@@ -116,3 +143,10 @@ class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "post_id": self.post_id,
+            "author": self.user.to_dict()
+        }

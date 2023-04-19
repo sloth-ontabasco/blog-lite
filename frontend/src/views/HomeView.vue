@@ -1,6 +1,20 @@
 <template>
     <div class="container">
         <div
+            v-if="deleteSuccess"
+            class="user-success-alert alert alert-success alert-dismissible fade show"
+            role="alert"
+        >
+            <strong>Post deleted successfully</strong>
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Close"
+            ></button>
+        </div>
+        <div
             v-if="postSuccess"
             class="user-success-alert alert alert-success alert-dismissible fade show"
             role="alert"
@@ -69,7 +83,8 @@
             return {
                 posts: [],
                 postSuccess: null,
-                error_msg: null
+                error_msg: null,
+                deleteSuccess: null
             };
         },
         computed: {
@@ -82,23 +97,28 @@
         },
         methods: {
             handleAddPostCalled(payload) {
-                console.log("Inside handle post called");
                 this.postSuccess = payload.postSuccess;
                 if (payload.postSuccess) this.posts.push(payload.data);
                 else this.error_msg = payload.data
             },
         },
-        async created() {
+        async mounted() {
             if (!localStorage.token) {
                 console.log("cant find token in localstorage");
+                await setTimeout(() => {},2000)
                 this.$store.commit("removeJwtToken");
                 return this.$router.push("/login");
             }
             const token = localStorage.getItem("token");
-            console.log("token@@" + token);
             const data = await getHomePage(token);
             console.log(data);
             this.posts = data;
+
+            if(this.$route.query) {
+                if(this.$route.query.deletePost)
+                    this.deleteSuccess = true
+            }
+            console.log("Reached end of mounted")
         },
         components: {
             AddPostModal,

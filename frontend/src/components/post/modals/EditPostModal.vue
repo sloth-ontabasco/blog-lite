@@ -16,9 +16,6 @@
                 </div>
                 <div class="modal-body">
                     <form
-                        action="/edit"
-                        method="post"
-                        enctype="multipart/form-data"
                         id="edit-post-form"
                     >
                         <div class="form-group">
@@ -28,34 +25,27 @@
                                 class="form-control"
                                 name="title"
                                 id="title"
-                                :value="post.title"
-                                required
+                                v-model="title"
                             />
                         </div>
-                        <input
-                            type="hidden"
-                            class="form-control"
-                            name="post-id"
-                            id="post-id"
-                            :value="post.id"
-                        />
                         <div class="form-group">
                             <label for="content">Content</label>
                             <textarea
                                 class="form-control"
                                 rows="5"
                                 name="content"
+                                v-model="description"
                                 id="content"
-                                >{{ post.content }}</textarea
                             >
+                            </textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button
-                        type="submit"
-                        form="edit-post-form"
+                        @click="editPost"
                         class="btn btn-primary"
+                        data-bs-dismiss="modal"
                     >
                         Edit Post
                     </button>
@@ -74,10 +64,33 @@
 </template>
 
 <script>
+    import { editPost } from '@/api';
     export default {
         name: "EditPostModal",
         props: {
             post: Object
+        },
+        data() {
+            return {
+                title: this.post.title,
+                description: this.post.description
+            }
+        },
+        methods: {
+            editPost() {
+                editPost(this.$store.state.token, this.post.id, {
+                    title: this.title,
+                    description: this.description
+                })
+                .then((data) => {
+                    this.$emit("editPostCalled",{success: true, data: data})
+                    // this.$router.push({name: this.$route.name, query: {editPost: "success"}})
+                })
+                .catch((e) => {
+                    this.$emit("editPostCalled",{success: false, msg: e})
+                    // this.$router.push({name: this.$route.name, query: {editPost: "failure",msg: e}})
+                })
+            }
         }
     };
 </script>

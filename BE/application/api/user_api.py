@@ -4,11 +4,14 @@ from flask_jwt_extended import jwt_required, current_user
 from ..models import User
 from .validation import NotFoundError, BusinessValidationError
 from ..database import db
-from .utils import user_fields, create_user_parser, update_user_parser, create_follow_parser
+from .utils import user_fields, create_user_parser, update_user_parser, get_user_parser
 
 
 class SearchAPI(Resource):
-    """Search API"""
+    """
+    Route: /api/users/<string:search_str>
+    """
+    @jwt_required()
     def get(self, search_str):
         matching_users = (
             User.query.filter(User.username.like(f"%{search_str}%")).limit(10).all()
@@ -31,13 +34,26 @@ class SearchAPI(Resource):
 
 
 class UserAPI(Resource):
-    # TODO add delete route
-    @marshal_with(user_fields)
-    def get(self, username):
-        user = User.query(User.username == username).first()
+    """
+    Route: /api/user
+    """
+    def get(self, id):
+        ff_only = request.args.get("ff_only",False)
+        user = User.query.filter(User.id == id).first()
+
         if user is None:
             raise NotFoundError(404)
-        return user
+        if ff_only:
+
+            print(f"Getting ff_only user for {user.username}")
+            followers = user.get_followers()
+            followed = user.get_followed()
+            res =  {
+                "followers": followers,
+                "followed": followed,
+            }
+            print(res)
+        return user.to_dict()
 
     @marshal_with(user_fields)
     def post(self):
@@ -160,21 +176,14 @@ class UserAPI(Resource):
 
 
 class FollowAPI(Resource):
+    """
+    Route: /api/user/follow/:username
+    """
 
-    @marshal_with(user_fields)
-    def post(self, follower):
-        args = create_follow_parser.parse_args()
-        followed_str = args.get("username",None) 
-
-        if not followed_str:
-            raise BusinessValidationError(status_code=400,error_code="F1",error_message="Username is not found")
-
-
-        follower = User.query.filter(User.username==follower).first()
-        followed = User.query.filter(User.username==followed_str).first()
-
-        if not follower: 
-            raise BusinessValidationError(status_code=400,error_code="F2", error_message="Follower does not exist")
+    @jwt_required()
+    def post(self, to_follow):
+        follower = current_user
+        followed = User.query.filter(User.username==to_follow).first()
         
         if not followed:
             raise BusinessValidationError(status_code=400,error_code="F3",error_message="Followed does not exist")
@@ -184,31 +193,24 @@ class FollowAPI(Resource):
 
         follower.follow(followed)
         db.session.commit()
-        return followed
+        return followed.to_dict()
 
 class UnollowAPI(Resource):
-
-    @marshal_with(user_fields)
-    def post(self, follower):
-        args = create_follow_parser.parse_args()
-        followed_str = args.get("username",None) 
-
-        if not followed_str:
-            raise BusinessValidationError(status_code=400,error_code="UF1",error_message="Username is not found")
-
-
-        follower = User.query.filter(User.username==follower).first()
-        followed = User.query.filter(User.username==followed_str).first()
-
-        if not follower: 
-            raise BusinessValidationError(status_code=400,error_code="UF2", error_message="Follower does not exist")
+    """
+    Route: /api/user/unfollow/:username
+    """
+    
+    @jwt_required()
+    def post(self, to_unfollow):
+        follower = current_user
+        followed = User.query.filter(User.username==to_unfollow).first()
         
         if not followed:
-            raise BusinessValidationError(status_code=400,error_code="UF3",error_message="Followed does not exist")
+            raise BusinessValidationError(status_code=400,error_code="UF3",error_message="Followed user does not exist")
 
         if followed == follower:
             raise BusinessValidationError(status_code=400, error_code="UF4",error_message="Cannot follow self")
 
         follower.unfollow(followed)
         db.session.commit()
-        return followed
+        return followed.to_dict()

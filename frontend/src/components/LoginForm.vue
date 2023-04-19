@@ -25,7 +25,6 @@
         </div>
 </template>
 <script>
-import emitter from '@/utils/index.js';
 export default {
     name: 'LoginForm',
     data() {
@@ -40,6 +39,7 @@ export default {
         async loginUser () {
             const res = await this.$store.dispatch('login',{username:this.username,password:this.password})
             console.log("logging in")
+            this.$router.push("/home")
             // res = await fetch("http://127.0.0.1:8081/login",{
                 // method: "POST",
             //     body: {
@@ -51,14 +51,7 @@ export default {
 
         } 
     },
-    mounted () {
-    emitter.on('failedRegistering', (msg) => {
-      this.errorMsg = msg
-    })
-    emitter.on('failedAuthentication', (msg) => {
-      this.errorMsg = msg
-    })
-  },
+    //TODO handle failed login
 };
 
 </script>

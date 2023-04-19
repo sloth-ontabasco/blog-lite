@@ -30,6 +30,8 @@ like_fields = {
     "author_id": fields.Integer
 }
 
+get_user_parser = reqparse.RequestParser()
+get_user_parser.add_argument('ff_only', default=False, required=False, type=bool, help='blablabla')
 
 create_user_parser = reqparse.RequestParser()
 create_user_parser.add_argument("username", location="form")
@@ -46,6 +48,10 @@ create_post_parser = reqparse.RequestParser()
 create_post_parser.add_argument("title",location="form")
 create_post_parser.add_argument("description",location="form")
 create_post_parser.add_argument("image",type=werkzeug.datastructures.FileStorage,location="files")
+
+update_post_parser = reqparse.RequestParser()
+update_user_parser.add_argument("title",location="json")
+update_user_parser.add_argument("description",location="json")
 
 create_follow_parser = reqparse.RequestParser()
 create_follow_parser.add_argument("username",location="form")

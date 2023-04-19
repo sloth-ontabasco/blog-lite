@@ -7,15 +7,16 @@ from flask import (
     flash,
     jsonify,
     make_response,
-    current_app,
-    json,
 )
-from flask_login import login_required, logout_user, current_user
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
     jwt_required,
     get_jwt_identity,
+)
+from flask_login import (
+    login_required,
+    logout_user,
 )
 import requests
 from flask_jwt_extended import (
@@ -24,7 +25,6 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
 )
-from ..database import db
 from ..models import User
 
 auth = Blueprint("auth", __name__)
@@ -50,7 +50,7 @@ def login():
             token = create_access_token(identity=user.username)
             ref_token = create_refresh_token(identity=user.username)
             print(token)
-            return jsonify({"token": token, "ref_token": ref_token}), 200
+            return jsonify({"token": token, "ref_token": ref_token,"id":user.id}), 200
 
 
 @auth.route("/refresh", methods=["POST"])

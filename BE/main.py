@@ -53,10 +53,10 @@ def create_app():
 app, api = create_app() 
 bcrypt = Bcrypt(app)
 
-api.add_resource(UserAPI, "/api/user","/api/user/<string:username>")
+api.add_resource(UserAPI, "/api/user","/api/user/<int:id>")
 api.add_resource(SearchAPI,"/api/users/<string:search_str>")
-api.add_resource(FollowAPI, "/api/user/follow/<string:follower>")
-api.add_resource(UnollowAPI, "/api/user/unfollow/<string:follower>")
+api.add_resource(FollowAPI, "/api/user/follow/<string:to_follow>")
+api.add_resource(UnollowAPI, "/api/user/unfollow/<string:to_unfollow>")
 
 api.add_resource(HomeAPI,"/api/home")
 api.add_resource(PostAPI,"/api/post", "/api/post/<int:post_id>")

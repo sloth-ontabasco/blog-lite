@@ -9,7 +9,7 @@
             <div class="card-footer">
                 <div class="card-author-info d-flex align-items-center">
                     <img class="comment-pfp m-1" :src="pfpURL"/>
-                    <p>&nbsp; &nbsp;<router-link :to="'/users/' + post.author.id">{{post.author.username}}</router-link> posted at {{post.created_on}}</p>
+                    <p>&nbsp; &nbsp;<router-link :to="{name:'user',params:{id:post.author.id}}">{{post.author.username}}</router-link> posted at {{post.created_on}}</p>
 
                 </div>
                 <div class="card-post-info">
@@ -33,11 +33,12 @@ export default  {
         }
     },
     mounted() {
+        console.log("inside mounted post card")
         getImageURL("blog_pictures/" + this.post.id + ".png") 
         .then(url => this.imgURL = url)
 
         getImageURL("profile_pictures/" + this.post.author.id + ".png") 
-        .then(url => this.imgURL = url)
+        .then(url => this.pfpURL = url)
         .catch(e => this.pfpURL = this.$store.state.defaultPfpURL)
     }
 }

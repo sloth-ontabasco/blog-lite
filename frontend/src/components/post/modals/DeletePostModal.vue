@@ -8,26 +8,12 @@
                 </div>
                 <div class="modal-body">
                     <p class="p-5">This action cannot be undone</p>
-                    <form
-                        action="/delete"
-                        method="post"
-                        enctype="multipart/form-data"
-                        id="del-post-form"
-                    >
-                        <input
-                            type="hidden"
-                            class="form-control"
-                            name="post-id"
-                            id="post-id"
-                            :value="post.id"
-                        />
-                    </form>
                 </div>
                 <div class="modal-footer">
                     <button
-                        type="submit"
-                        form="del-post-form"
+                        @click="deletePost"
                         class="btn btn-danger"
+                        data-bs-dismiss="modal"
                     >
                         Delete
                     </button>
@@ -46,10 +32,18 @@
 </template>
 
 <script>
+    import { deletePost } from '@/api/index.js'
     export default {
         name: "DeletePostModal",
         props: {
             post: Object
+        },
+        methods: {
+            async deletePost() {
+                const data = await deletePost(this.$store.state.token, this.post.id)
+                const navres = await this.$router.push({path: '/home', query: {deletePost: true}})
+                console.log(navres)
+            }
         }
     };
 </script>

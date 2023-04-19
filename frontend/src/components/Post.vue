@@ -2,7 +2,7 @@
     <div class="container mt-3">
         <PostHeader :post="post"></PostHeader>
         <div class="post-info-row row text-center h-25">
-            <img class="col" :src="'/assets/blog_pictures/' + post.id + '.png'" />
+            <img class="col" :src="imgURL" />
         </div>
         <PostButtons :post="post"></PostButtons>
         <div class="row mt-4">
@@ -21,12 +21,21 @@
     import PostHeader from '@/components/post/PostHeader.vue'      
     import AddComment from '@/components/post/AddComment.vue'      
     import PostButtons from '@/components/post/PostButtons.vue'      
-    
+    import { getImageURL } from '@/api'; 
     export default {
         name: "Post",
         props: {
             post: Object
         },
+        data() {
+            return {
+                imgURL: null
+            }
+        },
+        mounted() {
+            getImageURL("blog_pictures/" + this.post.id + ".png")
+            .then(url => this.imgURL = url)
+        },  
         components: {
             PostButtons,
             AddComment,

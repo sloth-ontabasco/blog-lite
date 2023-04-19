@@ -58,7 +58,7 @@
   </form>
 </template>
 <script>
-import register from '@/api/index.js'
+import { register } from '@/api/index.js'
 export default {
     name: 'RegisterForm',
     data() {

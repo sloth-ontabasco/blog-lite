@@ -2,26 +2,22 @@
     <div class="row m-2 post-buttons">
         <!-- {% if post.likes | length > 0 %} -->
         <a
-            v-if="post.likes > 0"
+            v-if="likes.length > 0"
             data-bs-toggle="modal"
             data-bs-target="#post-likes"
             class="col"
         >
-            <!-- {% if post.likes | length == 1 %} -->
-            <div v-if="post.likes.length == 1" class="col">
-                Liked by {{ liked_users[0].username }}
+            <div v-if="likes.length == 1" class="col">
+                Liked by {{ likes[0].author.username }}
             </div>
-            <!-- {% elif post.likes | length == 2 %} -->
-            <div v-else-if="post.likes.length == 2" class="col">
-                Liked by {{ liked_users[0].username }} and
-                {{ liked_users[1].username }}
+            <div v-else-if="likes.length == 2" class="col">
+                Liked by {{ likes[0].author.username }} and
+                {{ likes[1].author.username }}
             </div>
-            <!-- {% else %} -->
             <div v-else class="col">
-                Liked by {{ liked_users[0].username }},
-                {{ liked_users[1].username }} and others
+                Liked by {{ likes[0].author.username }},
+                {{ likes[1].author.username }} and others
             </div>
-            <!-- {% endif %} -->
         </a>
 
         <div class="col d-flex flex-row-reverse">
@@ -48,35 +44,19 @@
             </div>
             <!-- {% endif %} -->
 
-            <form
-                target="dummyframe"
-                :action="'/api/post/' + post.id + '/like'"
-                method="post"
-                onsubmit="location.reload();"
-            >
-                <input
-                    type="hidden"
-                    class="form-control"
-                    name="author_id"
-                    :value="this.$store.state.userData.id"
-                    style="display: none"
-                />
-                <!-- {% if liked == True %} -->
-                <button v-if="userLikedPost" type="submit" class="btn btn-outline-danger">
-                    {{ liked_users.length }} <i class="fa-solid fa-heart"></i>
-                </button>
-                <!-- {% else %} -->
-                <button v-else type="submit" class="btn btn-outline-danger">
-                    {{ liked_users.length }} <i class="fa-regular fa-heart"></i>
-                </button>
-                <!-- {% endif %} -->
-            </form>
+            <button v-if="userLikedPost" @click="likePost" class="btn btn-outline-danger">
+                {{ likes.length }} <i class="fa-solid fa-heart"></i>
+            </button>
+            <button v-else @click="likePost" class="btn btn-outline-danger">
+                {{ likes.length }} <i class="fa-regular fa-heart"></i>
+            </button>
+
         </div>
     </div>
 </template>
 
 <script>
-    import { getLikedUsers } from '@/api';
+    import { getLikedUsers, likePost } from '@/api';
     export default {
         name: "PostButtons",
         props: {
@@ -84,21 +64,31 @@
         },
         data() {
             return {
-                liked_users: []
+                likes: []
             }
         },
         computed: {
-            formActionLikeURL() {
-                return '/api/post/' + this.post.id + '/like'
-            },
             userLikedPost() {
-                return this.liked_users.some(user => user.id == this.$store.state.userData.id)
+                return this.likes.some(like => like.author.username == this.$store.state.userData.username)
+            }
+        },
+        methods: {
+            likePost() {
+                likePost(this.$store.state.token, this.post.id)
+                .then((data) => {
+                    if(data.liked)
+                        this.likes.push(data)    
+                    else {
+                        this.likes = this.likes.filter(like => like.author.username != this.$store.state.userData.username)
+                        console.log(this.likes.length)
+                    }
+                })
             }
         },
         mounted() {
            getLikedUsers(this.post.id)
            .then((data) => {
-                this.liked_users = data
+                this.likes = data
            }) 
         },
         componenets: {

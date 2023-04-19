@@ -10,8 +10,7 @@
                         <li v-for="(like,id) in likes" :key="id" class="list-group-item">
                             <img
                                 class="pfp"
-                                :src="'/static/profile_pictures/' + like.author.id + '.png'"
-                                onerror="this.onerror=null; this.src='/static/profile_pictures/default.png'"
+                                :src="pfpURL"
                             />
                             <router-link :to="{name: 'user', params: {id: like.author.id}}">{{like.author.username}}</router-link>
                         </li>
@@ -23,7 +22,7 @@
 </template>
 
 <script>
-    import { getLikedUsers } from '@/api';
+    import { getLikedUsers, getImageURL } from '@/api';
     export default {
         name: "AllLikesModal",
         props: {
@@ -31,12 +30,17 @@
         },
         data() {
             return {
-                likes: []
+                likes: [],
+                pfpURL: null
             }
         },
         mounted() {
             getLikedUsers(this.post.id)
             .then(data => this.likes = data)
+
+            getImageURL("profile_pictures/" + this.post.author.id + ".png")
+            .then(data => this.pfpURL = data)
+            .catch(e => this.pfpURL = this.$store.state.defaultPfpURL)
         }
     };
 </script>

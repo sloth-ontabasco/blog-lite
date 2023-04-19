@@ -5,10 +5,13 @@ from ..models import User, Post, Comment, Like, followers
 from .validation import BusinessValidationError
 from ..database import db
 from flask_jwt_extended import jwt_required, current_user
-from .utils import post_fields, comment_fields, like_fields, create_comment_parser, like_parser, create_post_parser 
+from .utils import  comment_fields, create_comment_parser, update_user_parser, create_post_parser 
 
 
 class PostAPI(Resource):
+    """
+    Route: /api/post/:id
+    """
 
     def get(self, post_id):
         post = Post.query.filter(Post.id == post_id).first()
@@ -16,7 +19,7 @@ class PostAPI(Resource):
             raise BusinessValidationError(status_code=404, error_code="P1",error_message="Post does not exist")
 
         res = post.to_dict()
-        return jsonify(post.to_dict())
+        return post.to_dict()
 
 
     @jwt_required()
@@ -62,11 +65,13 @@ class PostAPI(Resource):
         img.save(f"templates/static/blog_pictures/{new_post.id}.png")
         return new_post.to_dict()
 
+    @jwt_required()
     def put(self, post_id):
-        post,title, description, author_id = None
+        args = update_user_parser.parse_args()
+        title, description  = args.get("title",None), args.get("description",None)
 
         post = Post.query.filter(Post.id == post_id).first()
-        user = User.query.filter(User.id == author_id).first()
+        user = User.query.filter(User.id == current_user.id).first()
 
         if not post:
             raise BusinessValidationError(
@@ -99,8 +104,9 @@ class PostAPI(Resource):
         post.description = description
         post.title = title
         db.session.commit()
+        return post.to_dict()
 
-    @marshal_with(post_fields)
+    @jwt_required()
     def delete(self, post_id):
         post = Post.query.filter(Post.id == post_id).first()
 
@@ -118,7 +124,7 @@ class PostAPI(Resource):
 
         db.session.delete(post)
         db.session.commit()
-        return post
+        return post.to_dict()
 
 class HomeAPI(Resource):
 
@@ -193,10 +199,9 @@ class LikeAPI(Resource):
     Route: /api/post/:post_id/like
     """
 
-    @marshal_with(like_fields)
+    @jwt_required()
     def post(self, post_id):
-        args = like_parser.parse_args()
-        author_id = args.get("author_id",None)
+        author_id = current_user.id
         if not author_id:
             raise BusinessValidationError(status_code=400,error_code="L1",error_message="Author ID required")
 
@@ -205,15 +210,18 @@ class LikeAPI(Resource):
             raise BusinessValidationError(status_code=400,error_code="L2",error_message="Invalid Post ID")
 
         like = Like.query.filter(Like.author_id == author_id and Like.post_id == post_id).first()
+        res = {}
 
         if like:
             db.session.delete(like)
+            res['liked'] = False
         else:
             like = Like(author_id=author_id, post_id=post_id)
             db.session.add(like)
+            res['liked'] = True
         db.session.commit()
 
-        return like
+        return {**res, **like.to_dict()}
 
     def get(self,post_id):
         post = Post.query.filter(Post.id == post_id).first()
@@ -223,8 +231,8 @@ class LikeAPI(Resource):
         if not post.likes: 
             return []
         
-        liked_users = []
+        likes = []
         for like in post.likes:
-            liked_users.append(like.user.to_dict())
+            likes.append(like.to_dict())
 
-        return liked_users
+        return likes
